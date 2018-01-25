@@ -759,8 +759,25 @@ def main(options):
         if not jd.login_by_QR():
             return
 
-    while not jd.buy(options) and options.flush:
-        time.sleep(options.wait / 1000.0)
+    #tranvese buy list and add the lists to the cart
+    with open('goodName.txt', 'r') as f:
+        goodNum = f.readline()
+
+        i = 0
+        while(i < int(goodNum)):
+            i = i + 1
+
+            goodName = f.readline()
+
+            # for test
+            if options.good == '':
+                options.good = goodName.replace('\n', '')
+
+            while not jd.buy(options) and options.flush:
+                time.sleep(options.wait / 1000.0)
+
+            #clean good
+            options.good == ''
 
 
 if __name__ == '__main__':
@@ -771,7 +788,7 @@ if __name__ == '__main__':
     #parser.add_argument('-p', '--password', 
     #                    help='Jing Dong login user password', default='')
     parser.add_argument('-a', '--area', 
-                        help='Area string, like: 1_72_2799_0 for Beijing', default='1_72_2799_0')#22_1930_50944_0 indicate 四川省成都市青羊��
+                        help='Area string, like: 1_72_2799_0 for Beijing', default='22_1930_50944_0')#22_1930_50944_0 indicate 四川省成都市青羊��
     parser.add_argument('-g', '--good', 
                         help='Jing Dong good ID', default='')
     parser.add_argument('-c', '--count', type=int, 
@@ -789,26 +806,8 @@ if __name__ == '__main__':
     options = parser.parse_args()
     print options
 
-    with open('goodName.txt', 'r') as f:
-        goodNum = f.readline()
 
-        i = 0
-        while(i < int(goodNum)):
-            i = i + 1
+    main(options)
 
-            goodName = f.readline()
 
-            # for test
-            if options.good == '':
-                options.good = goodName.replace('\n', '')
-
-            '''
-            if options.password == '' or options.username == '':
-                print u'请输入用户名密码'
-                exit(1)
-            '''
-            main(options)
-
-            #clean good
-            options.good == ''
     
