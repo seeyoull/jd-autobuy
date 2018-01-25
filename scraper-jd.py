@@ -454,7 +454,7 @@ class JDWrapper(object):
         #   response: {"3180350":{"a":"34","b":"1","c":"-1"}}
         #stock_url = 'http://ss.jd.com/ss/areaStockState/mget' 
 
-        # http://c0.3.cn/stocks?callback=jQuery2289454&type=getstocks&skuIds=3133811&area=1_72_2799_0&_=1490694504044
+        # http://c0.3.cn/stocks?callback=jQuery2289454&type=getstocks&skuIds=3133811&area=22_1930_50944_0&_=1490694504044
         #   jQuery2289454({"3133811":{"StockState":33,"freshEdi":null,"skuState":1,"PopType":0,"sidDely":"40","channel":1,"StockStateName":"现货","rid":null,"rfg":0,"ArrivalDate":"","IsPurchase":true,"rn":-1}})
         # jsonp or json both work
         stock_url = 'https://c0.3.cn/stocks' 
@@ -462,7 +462,7 @@ class JDWrapper(object):
         payload = {
             'type' : 'getstocks',
             'skuIds' : str(stock_id),
-            'area' : area_id or '1_72_2799_0', # area change as needed
+            'area' : area_id or '22_1930_50944_0', # area change as needed
         }
         
         try:
@@ -568,7 +568,7 @@ class JDWrapper(object):
 
     def buy(self, options):
         # stock detail
-        good_data = self.good_detail(options.good)
+        good_data = self.good_detail(options.good, options.area)
 
         # retry until stock not empty
         if good_data['stock'] != 33:
@@ -771,7 +771,7 @@ if __name__ == '__main__':
     #parser.add_argument('-p', '--password', 
     #                    help='Jing Dong login user password', default='')
     parser.add_argument('-a', '--area', 
-                        help='Area string, like: 1_72_2799_0 for Beijing', default='1_72_2799_0')    
+                        help='Area string, like: 1_72_2799_0 for Beijing', default='1_72_2799_0')#22_1930_50944_0 indicate 四川省成都市青羊��
     parser.add_argument('-g', '--good', 
                         help='Jing Dong good ID', default='')
     parser.add_argument('-c', '--count', type=int, 
@@ -786,21 +786,29 @@ if __name__ == '__main__':
                         action='store_true',
                         help='Submit the order to Jing Dong')
                 
-    # example goods
-    hw_watch = '2567304'
-    iphone_7 = '3133851'
-    
     options = parser.parse_args()
     print options
-  
-    # for test
-    if options.good == '':
-        options.good = iphone_7
-    
-    '''
-    if options.password == '' or options.username == '':
-        print u'请输入用户名密码'
-        exit(1)
-    '''
-    main(options)
+
+    with open('goodName.txt', 'r') as f:
+        goodNum = f.readline()
+
+        i = 0
+        while(i < int(goodNum)):
+            i = i + 1
+
+            goodName = f.readline()
+
+            # for test
+            if options.good == '':
+                options.good = goodName.replace('\n', '')
+
+            '''
+            if options.password == '' or options.username == '':
+                print u'请输入用户名密码'
+                exit(1)
+            '''
+            main(options)
+
+            #clean good
+            options.good == ''
     
