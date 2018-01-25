@@ -758,6 +758,10 @@ def main(options):
     if not jd.checkLogin():
         if not jd.login_by_QR():
             return
+    else:
+        with open('cookie', 'rb') as f:
+            cookie = pickle.load(f)
+        jd.cookies =  cookie
 
     #tranvese buy list and add the lists to the cart
     with open('goodName.txt', 'r') as f:
