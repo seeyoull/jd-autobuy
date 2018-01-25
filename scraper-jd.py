@@ -755,29 +755,35 @@ class JDWrapper(object):
 def main(options):
     # 
     jd = JDWrapper()
+
+    # check if login or not, if not login, you need to scan QR code to login
+    # after first login, cookie will be saved in local
+    # the program will visit the web with the local cookie
+
+    #the first login
     if not jd.checkLogin():
-        if not jd.login_by_QR():
+        if not jd.login_by_QR(): #login by scaning QR code
             return
-    else:
+    else: # visit jd with cookie, read cookie from local file
         with open('cookie', 'rb') as f:
             cookie = pickle.load(f)
         jd.cookies =  cookie
 
     #tranvese buy list and add the lists to the cart
     with open('goodName.txt', 'r') as f:
-        totalGoodNum = f.readline()
+        totalGoodNum = f.readline() #total num of good types need to be added to the cart
 
         i = 0
         while(i < int(totalGoodNum)):
             i = i + 1
 
-            lines = f.readline()
-            goodName = lines.replace('\n', '').split(' ')[0]
+            lines = f.readline() #goodId + goodNum
+            goodId = lines.replace('\n', '').split(' ')[0]
             goodNum = lines.replace('\n', '').split(' ')[1]
 
             # for test
             if options.good == '':
-                options.good = goodName
+                options.good = goodId
 
             if options.count == 1:
                 options.count = goodNum
