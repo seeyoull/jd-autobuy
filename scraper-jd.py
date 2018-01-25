@@ -765,23 +765,29 @@ def main(options):
 
     #tranvese buy list and add the lists to the cart
     with open('goodName.txt', 'r') as f:
-        goodNum = f.readline()
+        totalGoodNum = f.readline()
 
         i = 0
-        while(i < int(goodNum)):
+        while(i < int(totalGoodNum)):
             i = i + 1
 
-            goodName = f.readline()
+            lines = f.readline()
+            goodName = lines.replace('\n', '').split(' ')[0]
+            goodNum = lines.replace('\n', '').split(' ')[1]
 
             # for test
             if options.good == '':
-                options.good = goodName.replace('\n', '')
+                options.good = goodName
+
+            if options.count == 1:
+                options.count = goodNum
 
             while not jd.buy(options) and options.flush:
                 time.sleep(options.wait / 1000.0)
 
             #clean good
-            options.good == ''
+            options.good = ''
+            options.count = 1
 
 
 if __name__ == '__main__':
@@ -809,7 +815,6 @@ if __name__ == '__main__':
                 
     options = parser.parse_args()
     print options
-
 
     main(options)
 
