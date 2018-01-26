@@ -159,7 +159,7 @@ class JDWrapper(object):
         # get auth code
         r = self.sess.get(self.imag, params=payload)
         if not self.response_status(r):
-            print u'获取验证码失�
+            print u'获取验证码失败'
             return False
 
         with open (image_file, 'wb') as f:
@@ -275,13 +275,13 @@ class JDWrapper(object):
 
         try:
             print '+++++++++++++++++++++++++++++++++++++++++++++++++++++++'
-            print u'{0} > 自动登录�.. '.format(time.ctime())
+            print u'{0} > 自动登录中... '.format(time.ctime())
             with open('cookie', 'rb') as f:
                 cookies = requests.utils.cookiejar_from_dict(pickle.load(f))
                 resp = requests.get(checkUrl, cookies=cookies)
 
                 if resp.status_code != requests.codes.OK:
-                    print u'登录过期�请重新登录！'
+                    print u'登录过期， 请重新登录！'
                     return False
                 else:
                     return True
@@ -315,7 +315,7 @@ class JDWrapper(object):
                 headers = self.headers
             )
             if resp.status_code != requests.codes.OK:
-                print u'获取登录页失� %u' % resp.status_code
+                print u'获取登录页失败: %u' % resp.status_code
                 return False
 
             ## save cookies
@@ -335,7 +335,7 @@ class JDWrapper(object):
                 }
             )
             if resp.status_code != requests.codes.OK:
-                print u'获取二维码失� %u' % resp.status_code
+                print u'获取二维码失败: %u' % resp.status_code
                 return False
 
             ## save cookies
@@ -398,7 +398,7 @@ class JDWrapper(object):
                     time.sleep(3)
             
             if not qr_ticket:
-                print u'二维码登陆失�
+                print u'二维码登陆失败'
                 return False
             
             # step 4: validate scan result
@@ -412,15 +412,15 @@ class JDWrapper(object):
                 params = {'t' : qr_ticket },
             )
             if resp.status_code != requests.codes.OK:
-                print u'二维码登陆校验失� %u' % resp.status_code
+                print u'二维码登陆校验失败: %u' % resp.status_code
                 return False
             
-            ## 京东有时候会认为当前登录有危险，需要手动验�
+            ## 京东有时候会认为当前登录有危险，需要手动验证
             ## url: https://safe.jd.com/dangerousVerify/index.action?username=...
             res = json.loads(resp.text)
             if not resp.headers.get('P3P'):
                 if res.has_key('url'):
-                    print u'需要手动安全验� {0}'.format(res['url'])
+                    print u'需要手动安全验证: {0}'.format(res['url'])
                     return False
                 else:
                     print_json(res)
@@ -642,7 +642,7 @@ class JDWrapper(object):
             if rs.status_code == 200:
                 js = json.loads(rs.text)
                 if js.get('pcount'):
-                    print u'数量�s @ %s' % (js['pcount'], js['pid'])
+                    print u'数量：%s @ %s' % (js['pcount'], js['pid'])
                     return True
             else:
                 print u'购买 %d 失败' % count
@@ -665,7 +665,7 @@ class JDWrapper(object):
             soup = bs4.BeautifulSoup(resp.text, "html.parser")
             
             print '+++++++++++++++++++++++++++++++++++++++++++++++++++++++'
-            print u'{0} > 购物车明�.format(time.ctime())
+            print u'{0} > 购物车明细'.format(time.ctime())
             print cart_header
             
             for item in soup.select('div.item-form'):
@@ -675,7 +675,7 @@ class JDWrapper(object):
                 price = tags_val(item.select('div.p-price strong'))        
                 sums  = tags_val(item.select('div.p-sum strong'))
                 gname = tags_val(item.select('div.p-name a'))
-                #: ￥字符解析出� 输出忽略�
+                #: ￥字符解析出错, 输出忽略￥
                 print cart_format.format(check, count, price[1:], sums[1:], gname)
 
             t_count = tags_val(soup.select('div.amount-sum em'))
@@ -739,9 +739,9 @@ class JDWrapper(object):
                     print u'请前往东京官方商城付款'
                     return True
                 else:
-                    print u'下单失败�{0}: {1}>'.format(js['resultCode'], js['message'])
+                    print u'下单失败！<{0}: {1}>'.format(js['resultCode'], js['message'])
                     if js['resultCode'] == '60017':
-                        # 60017: 您多次提交过快，请稍后再�
+                        # 60017: 您多次提交过快，请稍后再试
                         time.sleep(1)
             else:
                 print u'请求失败. StatusCode:', rp.status_code
