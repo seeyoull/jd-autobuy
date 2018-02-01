@@ -787,14 +787,16 @@ def main(options):
     #tranvese buy list and add the lists to the cart
     with open('goodLists.txt', 'r') as f:
         totalGoodNum = f.readline() #total num of good types need to be added to the cart
+        lines = f.readlines()  # goodId + goodNum
+        index = random.randint(0, int(totalGoodNum)-1)
 
         i = 0
         while(i < int(totalGoodNum)):
             i = i + 1
 
-            lines = f.readline() #goodId + goodNum
-            goodId = lines.replace('\n', '').split(' ')[0]
-            goodNum = lines.replace('\n', '').split(' ')[1]
+            projectInfo = lines[index]
+            goodId = projectInfo.replace('\n', '').split(' ')[0]
+            goodNum = projectInfo.replace('\n', '').split(' ')[1]
 
             # for test
             if options.good == '':
