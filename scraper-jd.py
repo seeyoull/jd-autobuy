@@ -806,7 +806,8 @@ def main(options):
             while not jd.buy(options) and options.flush:
                 time.sleep(options.wait / 1000.0)
 
-            if jd.good_num_cart_detail() 
+            if jd.good_num_cart_detail() != 0:
+                break
 
             #clean good
             options.good = ''
