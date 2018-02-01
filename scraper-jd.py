@@ -686,6 +686,21 @@ class JDWrapper(object):
         except Exception, e:
             print 'Exp {0} : {1}'.format(FuncName(), e)
 
+    def good_num_cart_detail(self):
+        # list all goods detail in cart
+        cart_url = 'https://cart.jd.com/cart.action'
+
+        try:
+            resp = self.sess.get(cart_url, cookies=self.cookies)
+            resp.encoding = 'utf-8'
+            soup = bs4.BeautifulSoup(resp.text, "html.parser")
+
+            t_count = tags_val(soup.select('div.amount-sum em'))
+
+            return t_count
+        except Exception, e:
+            #print 'Exp {0} : {1}'.format(FuncName(), e)
+            return 0
 
     def order_info(self, submit=False):
         # get order info detail, and submit order
@@ -790,6 +805,8 @@ def main(options):
 
             while not jd.buy(options) and options.flush:
                 time.sleep(options.wait / 1000.0)
+
+            if jd.good_num_cart_detail() 
 
             #clean good
             options.good = ''
