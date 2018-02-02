@@ -30,7 +30,7 @@ reload(sys)
 sys.setdefaultencoding('utf-8')
 
 # add switch to control print info
-PRINT_LOG_SW = 1
+PRINT_LOG_SW = 0
 
 # get function name
 FuncName = lambda n=0: sys._getframe(n + 1).f_code.co_name
@@ -602,7 +602,7 @@ class JDWrapper(object):
                 tag = soup.select('div.p-name a')
 
             if tag is None or len(tag) == 0:
-                print u'添加到购物车失败'
+                print u'[buy]:添加到购物车失败'
                 return False
 
             if PRINT_LOG_SW == 1:
@@ -798,12 +798,12 @@ def main(options):
         i = 0
         while(i < int(totalGoodNum)):
             index = lists[i]
-            projectInfo = lines[index]
+            productInfo = lines[index]
 
             i = i + 1 #self add
 
-            options.good = projectInfo.replace('\n', '').split(' ')[0]
-            options.count = projectInfo.replace('\n', '').split(' ')[1]
+            options.good = productInfo.replace('\n', '').split(' ')[0]
+            options.count = productInfo.replace('\n', '').split(' ')[1]
 
             while not jd.buy(options) and options.flush:
                 time.sleep(options.wait / 1000.0)
@@ -819,6 +819,8 @@ def main(options):
 
 
 if __name__ == '__main__':
+    print '+++++++++++++++++++++++++++++++++++++++++++++++++++++++'
+    print u'{0} > start autobuy... '.format(time.ctime())
     # help message
     parser = argparse.ArgumentParser(description='Simulate to login Jing Dong, and buy sepecified good')
     #parser.add_argument('-u', '--username', 
