@@ -29,6 +29,9 @@ import sys
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
+# add switch to control print info
+PRINT_LOG_SW = 1
+
 # get function name
 FuncName = lambda n=0: sys._getframe(n + 1).f_code.co_name
 
@@ -100,14 +103,6 @@ class JDWrapper(object):
 
         }
 
-        '''
-        try:
-            self.browser = webdriver.PhantomJS('phantomjs.exe')
-        except Exception, e:
-            print 'Phantomjs initialize failed :', e
-            exit(1)
-        '''
-        
     @staticmethod
     def print_json(resp_text):
         '''
@@ -274,8 +269,10 @@ class JDWrapper(object):
         checkUrl = 'https://passport.jd.com/uc/qrCodeTicketValidation'
 
         try:
-            print '+++++++++++++++++++++++++++++++++++++++++++++++++++++++'
-            print u'{0} > 自动登录中... '.format(time.ctime())
+            if PRINT_LOG_SW == 1:
+                print '+++++++++++++++++++++++++++++++++++++++++++++++++++++++'
+                print u'{0} > 自动登录中... '.format(time.ctime())
+
             with open('cookie', 'rb') as f:
                 cookies = requests.utils.cookiejar_from_dict(pickle.load(f))
                 resp = requests.get(checkUrl, cookies=cookies)
@@ -299,8 +296,9 @@ class JDWrapper(object):
     def login_by_QR(self):
         # jd login by QR code
         try:
-            print '+++++++++++++++++++++++++++++++++++++++++++++++++++++++'
-            print u'{0} > 请打开京东手机客户端，准备扫码登陆:'.format(time.ctime())
+            if PRINT_LOG_SW == 1:
+                print '+++++++++++++++++++++++++++++++++++++++++++++++++++++++'
+                print u'{0} > 请打开京东手机客户端，准备扫码登陆:'.format(time.ctime())
 
             urls = (
                 'https://passport.jd.com/new/login.aspx',
@@ -315,7 +313,7 @@ class JDWrapper(object):
                 headers = self.headers
             )
             if resp.status_code != requests.codes.OK:
-                print u'获取登录页失败: %u' % resp.status_code
+                print u'login_by_QR 获取登录页失败: %u' % resp.status_code
                 return False
 
             ## save cookies
@@ -335,7 +333,7 @@ class JDWrapper(object):
                 }
             )
             if resp.status_code != requests.codes.OK:
-                print u'获取二维码失败: %u' % resp.status_code
+                print u'login_by_QR 获取二维码失败: %u' % resp.status_code
                 return False
 
             ## save cookies
@@ -398,7 +396,7 @@ class JDWrapper(object):
                     time.sleep(3)
             
             if not qr_ticket:
-                print u'二维码登陆失败'
+                print u'login_by_QR 二维码登陆失败'
                 return False
             
             # step 4: validate scan result
@@ -412,7 +410,7 @@ class JDWrapper(object):
                 params = {'t' : qr_ticket },
             )
             if resp.status_code != requests.codes.OK:
-                print u'二维码登陆校验失败: %u' % resp.status_code
+                print u'login_by_QR 二维码登陆校验失败: %u' % resp.status_code
                 return False
             
             ## 京东有时候会认为当前登录有危险，需要手动验证
@@ -420,7 +418,7 @@ class JDWrapper(object):
             res = json.loads(resp.text)
             if not resp.headers.get('P3P'):
                 if res.has_key('url'):
-                    print u'需要手动安全验证: {0}'.format(res['url'])
+                    print u'login_by_QR 需要手动安全验证: {0}'.format(res['url'])
                     return False
                 else:
                     print_json(res)
@@ -529,14 +527,15 @@ class JDWrapper(object):
         # good stock
         good_data['stock'], good_data['stockName'] = self.good_stock(stock_id=stock_id, area_id=area_id)
         #stock_str = u'有货' if good_data['stock'] == 33 else u'无货'
-        
-        print '+++++++++++++++++++++++++++++++++++++++++++++++++++++++'
-        print u'{0} > 商品详情'.format(time.ctime())
-        print u'编号：{0}'.format(good_data['id'])
-        print u'库存：{0}'.format(good_data['stockName'])
-        print u'价格：{0}'.format(good_data['price'])
-        print u'名称：{0}'.format(good_data['name'])
-        #print u'链接：{0}'.format(good_data['link'])
+
+        if PRINT_LOG_SW == 1:
+            print '+++++++++++++++++++++++++++++++++++++++++++++++++++++++'
+            print u'{0} > 商品详情'.format(time.ctime())
+            print u'编号：{0}'.format(good_data['id'])
+            print u'库存：{0}'.format(good_data['stockName'])
+            print u'价格：{0}'.format(good_data['price'])
+            print u'名称：{0}'.format(good_data['name'])
+            #print u'链接：{0}'.format(good_data['link'])
         
         return good_data
         
@@ -574,7 +573,7 @@ class JDWrapper(object):
         if good_data['stock'] != 33:
             # flush stock state
             while good_data['stock'] != 33 and options.flush:
-                print u'<%s> <%s>' % (good_data['stockName'], good_data['name'])
+                print u'buy <%s> <%s>' % (good_data['stockName'], good_data['name'])
                 time.sleep(options.wait / 1000.0)
                 good_data['stock'], good_data['stockName'] = self.good_stock(stock_id=options.good, area_id=options.area)
                 
@@ -605,11 +604,12 @@ class JDWrapper(object):
             if tag is None or len(tag) == 0:
                 print u'添加到购物车失败'
                 return False
-            
-            print '+++++++++++++++++++++++++++++++++++++++++++++++++++++++'
-            print u'{0} > 购买详情'.format(time.ctime())
-            print u'链接：{0}'.format(link)
-            print u'结果：{0}'.format(tags_val(tag))
+
+            if PRINT_LOG_SW == 1:
+                print '+++++++++++++++++++++++++++++++++++++++++++++++++++++++'
+                print u'{0} > 购买详情'.format(time.ctime())
+                print u'链接：{0}'.format(link)
+                print u'结果：{0}'.format(tags_val(tag))
 
             # change count after add to shopping cart
             #self.buy_good_count(options.good, options.count)
@@ -617,8 +617,9 @@ class JDWrapper(object):
         except Exception, e:
             print 'Exp {0} : {1}'.format(FuncName(), e)
         else:
-            #self.cart_detail()
-            #return self.order_info(options.submit)
+            if PRINT_LOG_SW == 1:
+                self.cart_detail()
+            return self.order_info(options.submit)
             return True
         return False
 
@@ -788,34 +789,33 @@ def main(options):
     with open('goodLists.txt', 'r') as f:
         totalGoodNum = f.readline() #total num of good types need to be added to the cart
         lines = f.readlines()  # goodId + goodNum
-        index = random.randint(0, int(totalGoodNum)-1)
+
+        lists = []
+        for i in range(int(totalGoodNum)):
+            lists.append(i)
+        random.shuffle(lists)
 
         i = 0
         while(i < int(totalGoodNum)):
-            i = i + 1
-
+            index = lists[i]
             projectInfo = lines[index]
-            goodId = projectInfo.replace('\n', '').split(' ')[0]
-            goodNum = projectInfo.replace('\n', '').split(' ')[1]
 
-            # for test
-            if options.good == '':
-                options.good = goodId
+            i = i + 1 #self add
 
-            if options.count == 1:
-                options.count = goodNum
+            options.good = projectInfo.replace('\n', '').split(' ')[0]
+            options.count = projectInfo.replace('\n', '').split(' ')[1]
 
             while not jd.buy(options) and options.flush:
                 time.sleep(options.wait / 1000.0)
 
-            if jd.good_num_cart_detail() != 0:
-                break
+            #if jd.good_num_cart_detail() != 0:
+            #    break
 
             #clean good
-            options.good = ''
-            options.count = 1
-        jd.cart_detail()
-        jd.order_info(options.submit)
+            #options.good = ''
+            #options.count = 1
+        #jd.cart_detail()
+        #jd.order_info(options.submit)
 
 
 if __name__ == '__main__':
@@ -842,8 +842,9 @@ if __name__ == '__main__':
                         help='Submit the order to Jing Dong')
                 
     options = parser.parse_args()
-    print options
 
+    if PRINT_LOG_SW == 1:
+        print options
 
     main(options)
 
