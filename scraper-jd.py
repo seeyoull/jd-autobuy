@@ -22,6 +22,8 @@ import random
 
 
 import argparse
+
+from threading import Timer
 #from selenium import webdriver
 
 
@@ -767,6 +769,30 @@ class JDWrapper(object):
 
         return False
 
+def timeDiffCalc(inputTm):
+
+    inputTime = inputTm[0:5]
+    inputTime = inputTime + ':00'
+    time_local = time.localtime(time.time())
+    inputTime1 = time.strftime("%Y-%m-%d %H:%M:%S", time_local)
+    inputTime2 = inputTime1.replace(inputTime1[11:19], inputTime[0:8])
+
+    # get input timestamps
+    inputTs = time.mktime(time.strptime(inputTime2, '%Y-%m-%d %H:%M:%S'))
+
+    print inputTime2
+
+
+    # get current timestamps
+    currentTs = time.time()
+    print time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(currentTs))
+
+    # the task will be executed 30 seconds ahead of time
+    timeDiff = int(inputTs - currentTs - 10)
+    if timeDiff > 0:
+        return timeDiff
+    else:
+        return 0
 
 def main(options):
     # 
@@ -842,13 +868,27 @@ if __name__ == '__main__':
     parser.add_argument('-s', '--submit', 
                         action='store_true',
                         help='Submit the order to Jing Dong')
+    parser.add_argument('-t', '--time',
+                        help='start time for aotu-buy')
                 
     options = parser.parse_args()
 
     if PRINT_LOG_SW == 1:
         print options
 
-    main(options)
+    # if the execute time is sefrom threading import Timert, the program will run at the specified time
+    #if options.time:
 
+    options.time = '14:10'
+    if options.time:
+        sleepTime = timeDiffCalc(options.time)
 
-    
+        print u'delay time %d seconds:' % sleepTime
+
+        if sleepTime > 0:
+            Timer(sleepTime, main, [options]).start()
+        else:
+            main(options)
+    else:
+        main(options)
+
