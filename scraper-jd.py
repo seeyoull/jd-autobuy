@@ -794,6 +794,22 @@ def timeDiffCalc(inputTm):
     else:
         return 0
 
+def getBeijinTime():
+    try:
+        conn = httplib.HTTPConnection("www.beijing-time.org")
+        conn.request("GET", "/time15.asp")
+        response = conn.getresponse()
+        ts = response.getheader('date')
+        # print response.status, response.reason
+        if response.status == 200:
+            remoteTime = time.mktime(time.strptime(ts[5:], "%d %b %Y %H:%M:%S GMT")) + (8 * 60 * 60)
+            remoteTimeAdj = remoteTime + 1.5 # add 1.5 to eliminate the transmission delay
+
+            beijinTime = time.localtime(remoteTimeAdj)
+            os.system(beijinTime)
+    except:
+        return None
+
 def main(options):
     # 
     jd = JDWrapper()
