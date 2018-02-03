@@ -26,7 +26,7 @@ import argparse
 from threading import Timer
 #from selenium import webdriver
 
-
+import httplib
 import sys
 reload(sys)
 sys.setdefaultencoding('utf-8')
@@ -794,7 +794,7 @@ def timeDiffCalc(inputTm):
     else:
         return 0
 
-def getBeijinTime():
+def adjustLocalTime():
     try:
         conn = httplib.HTTPConnection("www.beijing-time.org")
         conn.request("GET", "/time15.asp")
@@ -803,10 +803,14 @@ def getBeijinTime():
         # print response.status, response.reason
         if response.status == 200:
             remoteTime = time.mktime(time.strptime(ts[5:], "%d %b %Y %H:%M:%S GMT")) + (8 * 60 * 60)
-            remoteTimeAdj = remoteTime + 1.5 # add 1.5 to eliminate the transmission delay
+            remoteTimeAdj = remoteTime + 2 # add 1.5 to eliminate the transmission delay
 
-            beijinTime = time.localtime(remoteTimeAdj)
-            os.system(beijinTime)
+            ttime = time.localtime(remoteTimeAdj)
+            #print ttime
+            #date1 = "date %u-%02u-%02u" % (ttime.tm_year, ttime.tm_mon, ttime.tm_mday)
+            time1 = "time %02u:%02u:%02u" % (ttime.tm_hour, ttime.tm_min, ttime.tm_sec)
+            #os.system(date1)
+            os.system(time1)
     except:
         return None
 
@@ -892,10 +896,12 @@ if __name__ == '__main__':
     if PRINT_LOG_SW == 1:
         print options
 
+    # adjust local time according to beijing standard time
+    adjustLocalTime()
+
     # if the execute time is sefrom threading import Timert, the program will run at the specified time
     #if options.time:
-
-    options.time = '14:10'
+    #options.time = '14:10'
     if options.time:
         sleepTime = timeDiffCalc(options.time)
 
