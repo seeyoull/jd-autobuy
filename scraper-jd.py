@@ -34,6 +34,9 @@ sys.setdefaultencoding('utf-8')
 # add switch to control print info
 PRINT_LOG_SW = 0
 
+# only calculate the time difference for the first good
+firstGoodFlg = 1
+
 # get function name
 FuncName = lambda n=0: sys._getframe(n + 1).f_code.co_name
 
@@ -571,18 +574,22 @@ class JDWrapper(object):
         # stock detail
         good_data = self.good_detail(options.good, options.area)
 
+        goodPrice = float(good_data['price'].encode('utf-8'))
         retryTimes = 0
         # retry until stock not empty
-        if good_data['stock'] != 33:
-            # flush stock state
-            while good_data['stock'] != 33 and options.flush or retryTimes < 3:
-                print u'buy <%s> <%s>' % (good_data['stockName'], good_data['name'])
-                time.sleep(options.wait / 1000.0)
-                good_data['stock'], good_data['stockName'] = self.good_stock(stock_id=options.good, area_id=options.area)
+        while (good_data['stock'] != 33 or goodPrice != options.price):
+            print u'buy <%s> <%s> <priceMatch:%d>' % (good_data['stockName'], good_data['name'], good_data['price'] == options.price)
+            time.sleep(options.wait / 1000.0)
+            good_data['stock'], good_data['stockName'] = self.good_stock(stock_id=options.good, area_id=options.area)
+            good_data['price'] = self.good_price(stock_id=options.good)
+            goodPrice = float(good_data['price'].encode('utf-8'))
 
-                retryTimes = retryTimes + 1
-            # retry detail
-            #good_data = self.good_detail(options.good)
+            if retryTimes >= 5:
+                return False
+            retryTimes = retryTimes + 1
+
+        # retry detail
+        #good_data = self.good_detail(options.good)
 
         # failed 
         link = good_data['link']
@@ -623,7 +630,6 @@ class JDWrapper(object):
             if PRINT_LOG_SW == 1:
                 self.cart_detail()
             return self.order_info(options.submit)
-            return True
         return False
 
     def buy_good_count(self, good_id, count):
@@ -782,12 +788,11 @@ def timeDiffCalc(inputTm):
 
     # get input timestamps
     inputTs = time.mktime(time.strptime(inputTime2, '%Y-%m-%d %H:%M:%S'))
-
-    #print 'the specified time is %d' % inputTime2
+    print 'the specified time is %s' % inputTime2
 
     # get current timestamps
     currentTs = time.time()
-    #print 'the current time is %d' % time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(currentTs))
+    print 'the current time is %s' % time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(currentTs))
 
     # the task will be executed 30 seconds ahead of time
     timeDiff = int(inputTs - currentTs - 1)
@@ -853,8 +858,14 @@ def main(options):
             productInfoTmp = productInfo.replace('\n', '').split(' ')
             options.good = productInfoTmp[0]
             options.count = productInfoTmp[1]
+            if productInfoTmp.__len__() > 2:
+                options.price = float(productInfoTmp[2])
 
-            if options.time:
+            global firstGoodFlg
+            if options.time and firstGoodFlg:
+
+                firstGoodFlg = 0
+
                 sleepTime = timeDiffCalc(options.time)
                 if sleepTime > 0:
                     time.sleep(sleepTime)
@@ -877,6 +888,8 @@ if __name__ == '__main__':
                         help='Jing Dong good ID', default='')
     parser.add_argument('-c', '--count', type=int, 
                         help='The count to buy', default=1)
+    parser.add_argument('-p', '--price', type=int,
+                        help='The price of the good', default=0)
     parser.add_argument('-w', '--wait', 
                         type=int, default=150,
                         help='Flush time interval, unit MS')
@@ -900,18 +913,6 @@ if __name__ == '__main__':
     # if the execute time is sefrom threading import Timert, the program will run at the specified time
     #if options.time:
     #options.time = '14:10'
-    '''
-    if options.time:
-        sleepTime = timeDiffCalc(options.time)
 
-        print u'delay time %d seconds:' % sleepTime
-
-        if sleepTime > 0:
-            Timer(sleepTime, main, [options]).start()
-        else:
-            main(options)
-    else:
-        main(options)
-    '''
     main(options)
 
