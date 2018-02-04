@@ -911,6 +911,7 @@ if __name__ == '__main__':
     # if the execute time is sefrom threading import Timert, the program will run at the specified time
     #if options.time:
     #options.time = '14:10'
+    '''
     if options.time:
         sleepTime = timeDiffCalc(options.time)
 
@@ -922,4 +923,6 @@ if __name__ == '__main__':
             main(options)
     else:
         main(options)
+    '''
+    main(options)
 
