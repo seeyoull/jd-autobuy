@@ -571,17 +571,18 @@ class JDWrapper(object):
         # stock detail
         good_data = self.good_detail(options.good, options.area)
 
+        retryTimes = 0
         # retry until stock not empty
         if good_data['stock'] != 33:
             # flush stock state
-            while good_data['stock'] != 33 and options.flush:
+            while good_data['stock'] != 33 and options.flush or retryTimes < 3:
                 print u'buy <%s> <%s>' % (good_data['stockName'], good_data['name'])
                 time.sleep(options.wait / 1000.0)
                 good_data['stock'], good_data['stockName'] = self.good_stock(stock_id=options.good, area_id=options.area)
-                
+
+                retryTimes = retryTimes + 1
             # retry detail
             #good_data = self.good_detail(options.good)
-            
 
         # failed 
         link = good_data['link']
@@ -731,6 +732,8 @@ class JDWrapper(object):
                 print u'应付款：{0}'.format(payment)
                 print snd_usr
                 print snd_add
+            else:
+                print '[order_info]: error 1'
 
             # just test, not real order
             if not submit:
@@ -788,7 +791,7 @@ def timeDiffCalc(inputTm):
     print time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(currentTs))
 
     # the task will be executed 30 seconds ahead of time
-    timeDiff = int(inputTs - currentTs - 10)
+    timeDiff = int(inputTs - currentTs - 1)
     if timeDiff > 0:
         return timeDiff
     else:
@@ -848,8 +851,14 @@ def main(options):
 
             i = i + 1 #self add
 
-            options.good = productInfo.replace('\n', '').split(' ')[0]
-            options.count = productInfo.replace('\n', '').split(' ')[1]
+            productInfoTmp = productInfo.replace('\n', '').split(' ')
+            options.good = productInfoTmp[0]
+            options.count = productInfoTmp[1]
+
+            if options.time:
+                sleepTime = timeDiffCalc(options.time)
+                if sleepTime > 0:
+                    time.sleep(sleepTime)
 
             while not jd.buy(options) and options.flush:
                 time.sleep(options.wait / 1000.0)
@@ -880,7 +889,7 @@ if __name__ == '__main__':
     parser.add_argument('-c', '--count', type=int, 
                         help='The count to buy', default=1)
     parser.add_argument('-w', '--wait', 
-                        type=int, default=500,
+                        type=int, default=150,
                         help='Flush time interval, unit MS')
     parser.add_argument('-f', '--flush', 
                         action='store_true', 
