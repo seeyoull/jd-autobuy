@@ -783,12 +783,11 @@ def timeDiffCalc(inputTm):
     # get input timestamps
     inputTs = time.mktime(time.strptime(inputTime2, '%Y-%m-%d %H:%M:%S'))
 
-    print inputTime2
-
+    #print 'the specified time is %d' % inputTime2
 
     # get current timestamps
     currentTs = time.time()
-    print time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(currentTs))
+    #print 'the current time is %d' % time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(currentTs))
 
     # the task will be executed 30 seconds ahead of time
     timeDiff = int(inputTs - currentTs - 1)
@@ -849,7 +848,7 @@ def main(options):
             index = lists[i]
             productInfo = lines[index]
 
-            i = i + 1 #self add
+            i = i + 1 # self-add
 
             productInfoTmp = productInfo.replace('\n', '').split(' ')
             options.good = productInfoTmp[0]
@@ -862,16 +861,6 @@ def main(options):
 
             while not jd.buy(options) and options.flush:
                 time.sleep(options.wait / 1000.0)
-
-            #if jd.good_num_cart_detail() != 0:
-            #    break
-
-            #clean good
-            #options.good = ''
-            #options.count = 1
-        #jd.cart_detail()
-        #jd.order_info(options.submit)
-
 
 if __name__ == '__main__':
     print '+++++++++++++++++++++++++++++++++++++++++++++++++++++++'
